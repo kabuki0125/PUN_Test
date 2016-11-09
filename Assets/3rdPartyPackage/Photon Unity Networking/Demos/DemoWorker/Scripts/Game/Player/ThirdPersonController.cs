@@ -87,7 +87,7 @@ public class ThirdPersonController : MonoBehaviour
     private Vector3 inAirVelocity = Vector3.zero;
 
     private float lastGroundedTime = 0.0f;
-    public bool isControllable = true;
+    public bool isControllable = false;
 
     void Awake()
     {

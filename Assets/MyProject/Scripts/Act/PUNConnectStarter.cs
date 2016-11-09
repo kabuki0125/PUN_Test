@@ -5,6 +5,10 @@
 /// </summary>
 public class PUNConnectStarter : Photon.PunBehaviour 
 {
+    /// <summary>チャット用コネクタ.</summary>
+    [SerializeField]
+    private ChatListener chatListener;
+    
     
     // 初期化
     void Awake()
@@ -20,20 +24,26 @@ public class PUNConnectStarter : Photon.PunBehaviour
             return;
         }
         
-        // ルーム新規作成.
+        // --- ルーム新規作成. ---
+        // ユーザー名.チャット用にこれがないと通らないようにする.
         GUILayout.BeginHorizontal();
-        if(GUILayout.Button("CreateRoom : ") && !string.IsNullOrEmpty(m_roomName)){
+        GUILayout.TextField("UserName : ");
+        m_userName = GUILayout.TextArea(m_userName, GUILayout.Width(200));
+        GUILayout.EndHorizontal();
+        // ルーム作成
+        GUILayout.BeginHorizontal();
+        if(GUILayout.Button("CreateRoom : ") && !string.IsNullOrEmpty(m_roomName) && !string.IsNullOrEmpty(m_userName)){
             PhotonNetwork.CreateRoom(m_roomName);   // TODO : 必要に応じてRoomOptionクラスを作成しオプション追加.
         }
         m_roomName = GUILayout.TextArea(m_roomName, 10, GUILayout.Width(200));
         GUILayout.EndHorizontal();
         // ランダム接続
-        if(GUILayout.Button("RandomConnect")){
+        if(GUILayout.Button("RandomConnect") && !string.IsNullOrEmpty(m_userName)){
             PhotonNetwork.JoinRandomRoom();
         }
         // 既存のルーム
         foreach(var room in PhotonNetwork.GetRoomList()){
-            if(GUILayout.Button( room.name+" ... ("+room.playerCount.ToString()+"/"+room.maxPlayers.ToString()+")" )){
+            if(GUILayout.Button( room.name+" ... ("+room.playerCount.ToString()+"/"+room.maxPlayers.ToString()+")" ) && !string.IsNullOrEmpty(m_userName) ){
                 PhotonNetwork.JoinRoom(room.name);
             }
         }
@@ -58,8 +68,11 @@ public class PUNConnectStarter : Photon.PunBehaviour
         Debug.Log("[PUNConnectStarter] joined room.");
         
         // テストでとりあえずユニティちゃんを召喚.
-        GameObject unitychan = PhotonNetwork.Instantiate("unitychan", Vector3.zero, Quaternion.identity, 0);
-        unitychan.GetComponent<ThirdPersonController>().isControllable = true;
+        PhotonNetwork.Instantiate("unitychan", Vector3.zero, Quaternion.identity, 0);
+        
+        // テストでチャットウィンドウを作る.こっちは各ユーザーが手元にそれぞれ用意する.
+        var go = GameObjectEx.LoadAndCreateObject("View_ChatWindowInAct");
+        go.GetComponent<View_ChatWindowInAct>().Init(m_userName, chatListener);
     }
     
 #endregion
@@ -75,6 +88,7 @@ public class PUNConnectStarter : Photon.PunBehaviour
     }
 #endif
     
+    private string m_userName = "";
     private string m_roomName = "";
 //    private PhotonView m_myPhotonView;
 }

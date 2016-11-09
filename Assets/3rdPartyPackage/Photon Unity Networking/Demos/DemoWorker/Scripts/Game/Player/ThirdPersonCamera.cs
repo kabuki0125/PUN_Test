@@ -25,6 +25,8 @@ public class ThirdPersonCamera : MonoBehaviour
     public float clampHeadPositionScreenSpace = 0.75f;
 
     public float lockCameraTimeout = 0.2f;
+    
+    public bool isMine { get; private set; } // 2016.11.09追加 yoshida.
 
     private Vector3 headOffset = Vector3.zero;
     private Vector3 centerOffset = Vector3.zero;
@@ -39,6 +41,10 @@ public class ThirdPersonCamera : MonoBehaviour
 
     void OnEnable()
     {
+        isMine = this.GetComponent<PhotonView>().isMine;    // 2016.11.09追加 yoshida.
+        if(!isMine){
+            return;
+        }
         if( !cameraTransform && Camera.main )
             cameraTransform = Camera.main.transform;
         if( !cameraTransform )
