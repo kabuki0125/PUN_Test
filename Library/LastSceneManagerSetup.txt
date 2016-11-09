@@ -1,4 +1,4 @@
 sceneSetups:
-- path: Assets/ChatProject/Scenes/demo.unity
+- path: Assets/MyProject/ChatProject/Scenes/demo.unity
   isLoaded: 1
   isActive: 1
