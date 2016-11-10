@@ -59,17 +59,42 @@ namespace UnityChan
             flickContoroller = GameObjectEx.LoadAndCreateObject("InputArea").GetComponent<FlickController>();
             flickContoroller.DidTap += JumpProc;                // タップしたらジャンプ.
             flickContoroller.DidDrag += InputFlickReceiver;     // 入力操作受付.
+            flickContoroller.DidEndDrag += InputSwipeEnd;
         }
         // フリック入力操作受付..移動する.
         private void InputFlickReceiver(float velocityX, float velocityY)
         {   
+            this.StopCoroutine("InertiaBackVelocity");
             var vec2 = new Vector2(velocityX, velocityY);
             var normalX = vec2.normalized.x;
             var normalY = vec2.normalized.y;
-            this.LocomotionProc(normalY, normalX);
+            vectorFlick = new Vector2(normalX, normalY);
+        }
+        // スワイプ入力終了時のコールバック.
+        private void InputSwipeEnd()
+        {
+            this.StartCoroutine("InertiaBackVelocity");
+        }
+        // 徐々に0に戻す.
+        private IEnumerator InertiaBackVelocity()
+        {
+            while(vectorFlick != Vector2.zero){
+                var vec = vectorFlick;
+                vec.x -= 0.1f;
+                vec.y -= 0.1f;
+                if(vec.x <= 0f){
+                    vec.x = 0f;
+                }
+                if(vec.y <= 0f){
+                    vec.y = 0f;
+                }
+                vectorFlick = vec;
+                yield return null;
+            }
         }
         
         // 以下、メイン処理.リジッドボディと絡めるので、FixedUpdate内で処理を行う.
+        // またPhotonの同期通信に載せたい場合はここで値を変更しないと相手がたに届かないので注意.
         void FixedUpdate ()
         {
             // 操作が可能なのは自身がコントロールを持ってる時だけ.
@@ -79,6 +104,12 @@ namespace UnityChan
             
             float v = Input.GetAxis("Vertical");               // 入力デバイスの垂直軸をvで定義
             float h = Input.GetAxis("Horizontal");             // 入力デバイスの水平軸をhで定義
+            
+            // TODO : よう修正.動きっぱなしになる.
+            if(v==0 && h==0){
+                v = vectorFlick.y;
+                h = vectorFlick.x;
+            }
             
             // axisの値で移動.
             this.LocomotionProc(v, h);
@@ -241,6 +272,7 @@ namespace UnityChan
             col.center = orgVectColCenter;
         }
         
+        private Vector2 vectorFlick;
         private FlickController flickContoroller;
         
         // キャラクターコントローラ（カプセルコライダ）の参照

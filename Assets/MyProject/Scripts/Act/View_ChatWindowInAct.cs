@@ -16,7 +16,6 @@ public class View_ChatWindowInAct : ViewBase
                         DidSubScribe);
         m_listener.DidGetGlobalMessage += DidGetGlobalMessageProc;
         
-        m_chatPanel = this.GetScript<Image>("Chat Panel");
         m_logText = this.GetScript<Text>("Selected Channel Text");
         m_inputChatField = this.GetScript<InputField>("Chat InputField");
         
@@ -93,7 +92,6 @@ public class View_ChatWindowInAct : ViewBase
     
     private Image m_errorPanel;
     private Image m_pickNamePanel;
-    private Image m_chatPanel;
     private Text m_logText;
     
     private InputField m_inputChatField;

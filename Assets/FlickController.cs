@@ -66,7 +66,6 @@ public class FlickController : ViewBase
                 continue;
             }
             var inputVelocity = Input.mousePosition - m_startPos;
-            var rad = Mathf.Atan2(inputVelocity.y, inputVelocity.x);
             if(inputVelocity.magnitude > m_thresholdFlick){
                 // 一回だけのドラッグイベントコール.
                 if(!m_bCallDragOnce){
