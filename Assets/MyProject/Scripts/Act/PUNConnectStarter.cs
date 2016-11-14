@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 
 /// <summary>
 /// クラス：PUNのネットワーク接続を開始するスターター.
@@ -9,10 +10,12 @@ public class PUNConnectStarter : Photon.PunBehaviour
     [SerializeField]
     private ChatListener chatListener;
     
-    
-    // 初期化
-    void Awake()
-    {   
+    /// <summary>
+    /// 初期化
+    /// </summary>
+    public void Init(Action didInRoom = null)
+    {
+        m_didInRoom = didInRoom;
         PhotonNetwork.autoJoinLobby = true;
         PhotonNetwork.ConnectUsingSettings("v1.0");     // マスターサーバーへ接続.
     }
@@ -57,7 +60,7 @@ public class PUNConnectStarter : Photon.PunBehaviour
     public override void OnJoinedLobby()
     {
         Debug.Log("[PUNConnectStarter] joined lobby.");
-        // TODO : uGUIを使わないパターン(NGUIなど)はここにルーム入室処理を記載するのが流れとしては正しい.
+        // TODO : GUILayoutを使わないパターン(NGUIなど)はここにルーム入室処理を記載するのが流れとしては正しい.
     }
     
     /// <summary>
@@ -67,12 +70,13 @@ public class PUNConnectStarter : Photon.PunBehaviour
     {
         Debug.Log("[PUNConnectStarter] joined room.");
         
-        // テストでとりあえずユニティちゃんを召喚.
-        PhotonNetwork.Instantiate("unitychan", Vector3.zero, Quaternion.identity, 0);
-        
-        // テストでチャットウィンドウを作る.こっちは各ユーザーが手元にそれぞれ用意する.
+        // 併せてチャットウィンドウを作る.こっちは各ユーザーが手元にそれぞれ用意する.
         var go = GameObjectEx.LoadAndCreateObject("View_ChatWindowInAct");
         go.GetComponent<View_ChatWindowInAct>().Init(m_userName, chatListener);
+        
+        if(m_didInRoom != null){
+            m_didInRoom();
+        }
     }
     
 #endregion
@@ -90,5 +94,5 @@ public class PUNConnectStarter : Photon.PunBehaviour
     
     private string m_userName = "";
     private string m_roomName = "";
-//    private PhotonView m_myPhotonView;
+    private Action m_didInRoom;
 }
