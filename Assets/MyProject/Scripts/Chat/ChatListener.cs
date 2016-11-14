@@ -89,6 +89,17 @@ public class ChatListener : MonoBehaviour, IChatClientListener
     }
     
     /// <summary>
+    /// 購読停止.
+    /// </summary>
+    public void Unsubscribe()
+    {
+        if(m_client == null){
+            return;
+        }
+        m_client.Unsubscribe(channels);
+    }
+    
+    /// <summary>
     /// メッセージ送信.
     /// </summary>
     public void SendChatMessage(string message)

@@ -125,6 +125,8 @@ public class View_ChatWindow : ViewBase
             return;
         }
         
+        GUILayout.BeginVertical();
+        // 
         var text = m_bDebugSending ? "Stop auto message." : "Send message loop with auto.";
         if(GUILayout.Button(text)){
             if(m_bDebugSending){
@@ -134,7 +136,22 @@ public class View_ChatWindow : ViewBase
             }
             m_bDebugSending = !m_bDebugSending;
         }
+        // 
+        if(GUILayout.Button("massive sending proc with 1frame.")){
+            this.MassiveSendingProc();
+        }
+        // 
+        if(!m_bSendingMassive){
+            if(GUILayout.Button("Send massive message.")){
+                this.StartCoroutine("SendMassiveMessage");
+            }
+        }
+        // 
+        if(GUILayout.Button("Unsubscribe.")){
+            m_listener.Unsubscribe();
+        }
     }
+    // 継続的にメッセージ送信を行う.
     private IEnumerator SendLoopMessage()
     {
         while(true){
@@ -143,6 +160,38 @@ public class View_ChatWindow : ViewBase
         }
     }
     private bool m_bDebugSending = false;
+    
+    // 1フレームに大量の送信処理を行う.
+    private void MassiveSendingProc()
+    {
+        for(var i = 0 ; i < 3000 ; i++){
+            m_listener.SendChatMessage("massive proc");
+        }
+    }
+    
+    // 大量のメッセージ送信を行う.
+    private IEnumerator SendMassiveMessage()
+    {
+        m_bSendingMassive = true;
+        var text = "sendMassiveStr ";
+        while(text.Length < short.MaxValue){
+            /*
+            if((text.Length*2) >= short.MaxValue){
+                var cnt = short.MaxValue - text.Length;
+                for(var i = 0 ; i < cnt ; i++){
+                    text += 'a';
+                }
+                break;
+            }
+            */
+            text += text;
+            yield return null;
+        }
+        Debug.Log("send message cnt="+text.Length+"/shot max="+short.MaxValue);
+        m_listener.SendChatMessage(text);
+        m_bSendingMassive = false;
+    }
+    private bool m_bSendingMassive = false;
     
 #endregion
     
