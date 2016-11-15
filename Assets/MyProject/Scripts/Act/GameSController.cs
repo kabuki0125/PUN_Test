@@ -19,7 +19,7 @@ public class GameSController : MonoBehaviour
     // 内部初期化.
     private void InitInternal()
     {
-        var go = GameObjectEx.LoadAndCreateObject("Screen_Game", this.gameObject);
+        var go = GameObjectEx.LoadAndCreateObject("Screen_Game", this.gameObject);       
         go.GetComponent<Screen_Game>().Init();
     }
     

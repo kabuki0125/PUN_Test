@@ -30,7 +30,7 @@ public class PUNConnectStarter : Photon.PunBehaviour
         // --- ルーム新規作成. ---
         // ユーザー名.チャット用にこれがないと通らないようにする.
         GUILayout.BeginHorizontal();
-        GUILayout.TextField("UserName : ");
+        GUILayout.Label("UserName : ");
         m_userName = GUILayout.TextArea(m_userName, GUILayout.Width(200));
         GUILayout.EndHorizontal();
         // ルーム作成
