@@ -18,6 +18,10 @@ public class PUNConnectStarter : Photon.PunBehaviour
         m_didInRoom = didInRoom;
         PhotonNetwork.autoJoinLobby = true;
         PhotonNetwork.ConnectUsingSettings("v1.0");     // マスターサーバーへ接続.
+        
+        // カクつかない程度の頻度で同期.同期通信を秒間30回行う.
+        PhotonNetwork.sendRate = 30; 
+        PhotonNetwork.sendRateOnSerialize = 30;
     }
     
     // ルーム接続周りはとりあえずGUIで.

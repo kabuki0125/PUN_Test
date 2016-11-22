@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using MyLibrary.Unity;
 
 
 /// <summary>
@@ -55,6 +57,7 @@ public class PUNConnector_Battle : Photon.MonoBehaviour
         if(SharedInstance != null){
             return;
         }
+        
         SharedInstance = this;
     }
 }

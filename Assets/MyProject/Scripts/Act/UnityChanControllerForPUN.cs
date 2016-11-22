@@ -1,4 +1,4 @@
-﻿//
+//
 // Mecanimのアニメーションデータが、原点で移動しない場合の Rigidbody付きコントローラ
 // サンプル
 // 2014/03/13 N.Kobyasahi
@@ -259,6 +259,90 @@ namespace UnityChan
             col.height = orgColHight;
             col.center = orgVectColCenter;
         }
+        
+        
+#region debug.
+        // 同期通信タイミングでコールバックが来る.Photonクラウドに対する負荷検証用.
+        void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+        {
+            // 送信.
+            if(stream.isWriting){
+//                stream.SendNext((int)GameSystem.GetUnixTimeNow());
+                // ゴミを送りまくって負荷を確認してみる.
+                for(var i = 0 ; i < m_sendVal ; i++){
+                    stream.SendNext("test");
+                }
+            }
+            
+            // 受信.RPCによって書き込みデータ量が書き換えられる可能性がある.書き換え後は前の書き込み数で読み込みを完了するまでスキップする.
+            if(stream.isReading && m_bPhotonSyncRead){
+                // TODO : ログが負荷になるので.
+//                var sendTime = (int)stream.ReceiveNext();
+//                var processTime = ((int)GameSystem.GetUnixTimeNow()) - sendTime;
+//                Debug.Log("<color=red>from OnPhotonSerializeView process time="+processTime.ToString()+"秒</color>");
+                for(var i = 0 ; i < m_sendVal ; i++){
+                    stream.ReceiveNext();
+                }
+            }
+        }
+        
+        // ユニティちゃんPhotonView経由で行うデバッグメニュー.
+        private string m_inputStrNum = "";  // TextAreaが文字列入力になるので一旦これで受け取る.
+        void OnGUI ()
+        {
+            if(!this.photonView.isMine){
+                return; // モジュールになるのは自分が操作しているユニティちゃんだけ.
+            }
+            
+            // 定期送受信している同期文字列数を変える.必ず検証対象プレイヤー全員が部屋に入っている状態で変更を行うこと!!送受信量不一致でエラーが出る!!
+            GUI.Label(new Rect(Screen.width - 260, 10, 300, 20), "Send Message Value : "+m_sendVal.ToString());
+            if( GUI.Button(new Rect(Screen.width - 260, 30, 120, 60), "SendVal : ") && !string.IsNullOrEmpty(m_inputStrNum)){
+                var val = 0;
+                if( int.TryParse( m_inputStrNum, out val) ){
+                    this.photonView.RPC("ChangeSendValue", PhotonTargets.AllBuffered, val);
+                    m_inputStrNum = "";
+                }
+            }
+            m_inputStrNum = GUI.TextArea(new Rect(Screen.width - 135, 30, 140, 60), m_inputStrNum);
+            
+            // 大量のRPCを送信する.
+            if( GUI.Button(new Rect(Screen.width - 260, 100, 250, 50), "Send Massive RPC.") ){
+                for(var i = 0 ; i < 20000 ; i++){
+                    this.photonView.RPC("SendMassiveMessage", PhotonTargets.AllBuffered, "test");
+                }
+            }
+        }
+        
+        /// <summary>デバッグ送信メッセージ量を変更する.</summary>
+        [PunRPC]
+        public void ChangeSendValue(int val)
+        {
+            this.StartCoroutine("ChangeOnSerializeSendVal" , val);
+        }
+        // 書き換えた後のデータ量で送信してくるまでタイムラグがあるので待ちつつ,RPC送信.
+        private IEnumerator ChangeOnSerializeSendVal(int val)
+        {
+            m_bPhotonSyncRead = false;
+            
+            var time = new WaitForSeconds(3f);  // 前のsendValでの受信終わりを待つ.
+            yield return time;
+            
+            m_sendVal = val;
+            Debug.Log("ChangeSendVal for OnPhotonSerializeView : val="+m_sendVal);
+            
+            time = new WaitForSeconds(3f);  // 各々のRPC受信ラグを待つ.
+            yield return time;
+            
+            m_bPhotonSyncRead = true;
+        }
+        
+        /// <summary>大量のRPC送信デバッグで送受信する際のRPC定義.ログを表示するとその処理だけで負荷がかかり純粋なクラウド負荷が見られなくなるのでデフォルトでは何もしない.</summary>
+        [PunRPC]
+        public void SendMassiveMessage(string text){}
+        
+        private static int m_sendVal = 0;   // デバッグ文字列送信量.この値は場にいる全てのユニティちゃんで共有して使用する.
+        private static bool m_bPhotonSyncRead = true;   // OnPhotonSerializeViewの読み込み有効無効フラグ.
+#endregion
         
         private Vector2 vectorFlick;
         private FlickController flickContoroller;

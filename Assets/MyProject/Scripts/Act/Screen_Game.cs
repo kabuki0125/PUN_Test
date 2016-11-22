@@ -21,9 +21,6 @@ public class Screen_Game : ViewBase
     /// </summary>
 	public void Init()
     {
-        if(!PhotonNetwork.isMasterClient && PUNConnector_Battle.SharedInstance != null){
-            this.gameObject.AddInChild( PUNConnector_Battle.SharedInstance.gameObject );    // マスタークライアント以外だと外に出てるのでしまう.
-        }
         this.CreateObjects();
     }
     
@@ -48,6 +45,7 @@ public class Screen_Game : ViewBase
         var go = PhotonNetwork.Instantiate("PUNConnector_Battle", Vector3.zero, Quaternion.identity, 0);
         this.gameObject.AddInChild(go);
         
+        /*
         // とりあえず10体ほど敵を出す.
         for(var i = 0 ; i < 5 ; i++){
             var x = Random.Range(-30f, 30f);
@@ -56,6 +54,7 @@ public class Screen_Game : ViewBase
             rootEnemy.AddInChild(go);
         }
         PUNConnector_Battle.SharedInstance.UpdateEnemyNum(5);
+        */
     }
     
 #region debug.
@@ -63,6 +62,12 @@ public class Screen_Game : ViewBase
     void OnGUI()
     {
         GUILayout.BeginVertical();
+        
+        // TODO : ホストが抜けた場合なくなるので作る.ちゃんとやるならホストが部屋を抜けた時のコールバックにの指示をRPCかなんかで仕込んでおくのが良さそう.
+        if(PUNConnector_Battle.SharedInstance == null){
+            var go = PhotonNetwork.Instantiate("PUNConnector_Battle", Vector3.zero, Quaternion.identity, 0);
+            this.gameObject.AddInChild(go);
+        }
         
         // マスタークライアントなら.
         if(PhotonNetwork.isMasterClient){    
